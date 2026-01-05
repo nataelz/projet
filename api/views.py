@@ -15,4 +15,9 @@ def computer(request, computer_id):
     except Computer.DoesNotExist:
         raise Http404()
     
-    return HttpResponse(json.dumps({"test": computer.name}))
+    context = {"computer": computer}
+    return render(request, "api/computer.html", context)
+
+def search(request):
+    context = { "computers": [{"name": "test"}, {"name": "test2"}] }
+    return render(request, "api/search.html", context)
