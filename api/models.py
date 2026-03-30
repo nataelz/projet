@@ -106,15 +106,15 @@ class Computer(models.Model):
     serial_number = models.CharField(max_length=150, blank=True)
     format = models.CharField(max_length=15, choices=FORMAT_CHOICES)
 
-    processors = models.ManyToManyField(Processor)
+    processors = models.ManyToManyField(Processor, blank=True)
 
-    memory = models.ManyToManyField(Memory)
+    memory = models.ManyToManyField(Memory, blank=True)
 
-    storage = models.ManyToManyField(Storage)
+    storage = models.ManyToManyField(Storage, blank=True)
 
-    graphics_card = models.ManyToManyField(GraphicsCard)
+    graphics_card = models.ManyToManyField(GraphicsCard, blank=True)
 
-    network = models.ManyToManyField(Network)
+    network = models.ManyToManyField(Network, blank=True)
 
     class Meta:
         ordering = ["constructor", "model_number", "serial_number", "name"]
