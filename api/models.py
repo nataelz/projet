@@ -16,6 +16,9 @@ class Component(models.Model):
     name = models.CharField(max_length=200, blank=True)
     constructor = models.ForeignKey(Company, null=True, on_delete=models.SET_NULL)
 
+    class Meta:
+        ordering = ["constructor", "name"]
+
     def __str__(self):
         return f"{self.constructor} {self.name}"
 
@@ -42,6 +45,11 @@ class Memory(Component):
     size = models.PositiveBigIntegerField()
     frequency = models.PositiveBigIntegerField()
 
+    class Meta:
+        verbose_name = "Memory Stick"
+        verbose_name_plural = "Memory Sticks"
+        ordering = ["constructor", "name"]
+
 class Storage(Component):
     STORAGE_TYPE_CHOICES = [
         ("hdd", "HDD"),
@@ -53,8 +61,16 @@ class Storage(Component):
     storage_type = models.CharField(max_length=10, choices=STORAGE_TYPE_CHOICES)
     size = models.PositiveBigIntegerField()
 
+    class Meta:
+        verbose_name = "Storage Device"
+        verbose_name_plural = "Storage Devices"
+        ordering = ["constructor", "name"]
+
 class GraphicsCard(Component):
-    pass
+    class Meta:
+        verbose_name = "Graphics Card"
+        verbose_name_plural = "Graphics Cards"
+        ordering = ["constructor", "name"]
 
 class Network(Component):
     NETWORK_TYPE_CHOICES = [
@@ -64,6 +80,11 @@ class Network(Component):
 
     network_type = models.CharField(max_length=10, choices=NETWORK_TYPE_CHOICES)
     speed = models.PositiveBigIntegerField()
+
+    class Meta:
+        verbose_name = "Network Connection"
+        verbose_name_plural = "Network Connections"
+        ordering = ["constructor", "name"]
 
 class Computer(models.Model):
     FORMAT_CHOICES = [
@@ -89,3 +110,6 @@ class Computer(models.Model):
     graphics_card = models.ManyToManyField(GraphicsCard)
 
     network = models.ManyToManyField(Network)
+
+    class Meta:
+        ordering = ["constructor", "model_number", "serial_number", "name"]
