@@ -95,6 +95,11 @@ class Computer(models.Model):
         ("tablet", "Tablet")
     ]
 
+    SITE_CHOICES =[
+        ("ldlc", "LDLC")
+    ]
+
+    site = models.CharField(max_length=15, choices=SITE_CHOICES)
     constructor = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=150, blank=True)
     model_number = models.CharField(max_length=150, blank=True)
