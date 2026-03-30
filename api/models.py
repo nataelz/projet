@@ -113,3 +113,16 @@ class Computer(models.Model):
 
     class Meta:
         ordering = ["constructor", "model_number", "serial_number", "name"]
+
+    def __str__(self):
+        out = ""
+
+        if self.constructor != None:
+            out += f"{self.constructor} "
+        
+        if self.name != None:
+            out += f"{self.name}"
+        elif self.model_number:
+            out += f"{self.model_number}"
+        
+        return out
