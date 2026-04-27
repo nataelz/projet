@@ -15,7 +15,7 @@ def computer(request, computer_id):
     except Computer.DoesNotExist:
         raise Http404()
     
-    context = {"computer": computer.name}
+    context = computer.to_dict()
     return HttpResponse(json.dumps(context), content_type="application/json")
 
 def search(request):

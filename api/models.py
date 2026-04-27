@@ -1,5 +1,8 @@
 from django.db import models
 
+def extract_mtm_pk(field: models.ManyToManyField):
+    return list(map(lambda x: x.pk, field.all()))
+
 class Company(models.Model):
     name = models.CharField(max_length=100)
     website = models.URLField(blank=True)
@@ -11,6 +14,15 @@ class Company(models.Model):
     
     def __str__(self):
         return self.name
+    
+    def to_dict(id):
+        company = Company.objects.get(pk=id)
+
+        return {
+            "id": id,
+            "name": company.name,
+            "website": company.website,
+        }
 
 class Component(models.Model):
     name = models.CharField(max_length=200, blank=True)
@@ -21,6 +33,15 @@ class Component(models.Model):
 
     def __str__(self):
         return f"{self.constructor} {self.name}"
+
+    def to_comp_dict(id):
+        component = Component.objects.get(pk=id)
+
+        return {
+            "id": id,
+            "name": component.name,
+            "constructor": component.constructor.pk,
+        }
 
 class Processor(Component):
     ARCHITECTURE_CHOICES = [
@@ -131,3 +152,21 @@ class Computer(models.Model):
             out += f"{self.model_number}"
         
         return out
+
+    def to_dict(self):
+        print(self.processors)
+
+        return {
+            "id": self.pk,
+            "site": self.site,
+            "constructor": Company.to_dict(self.constructor.pk),
+            "name": self.name,
+            "model_number": self.model_number,
+            "serial_numper": self.serial_number,
+            "format": self.format,
+            "processors": list(map(lambda x: Component.to_comp_dict(x.pk), self.processors.all())),
+            "memory": extract_mtm_pk(self.memory),
+            "storage": extract_mtm_pk(self.storage),
+            "graphics_card": extract_mtm_pk(self.graphics_card),
+            "network": extract_mtm_pk(self.network),
+        }
