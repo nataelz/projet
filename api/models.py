@@ -34,35 +34,27 @@ class Component(models.Model):
     def __str__(self):
         return f"{self.constructor} {self.name}"
 
-    def to_comp_dict(id):
-        component = Component.objects.get(pk=id)
-
-        return {
-            "id": id,
-            "name": component.name,
-            "constructor": component.constructor.pk,
-        }
-
 class Processor(Component):
-    ARCHITECTURE_CHOICES = [
-        ("x86", "x86 (32-bit)"),
-        ("x86-64", "x86-64 (64-bit)"),
-        ("arm", "ARM")
-    ]
+    class Architecture(models.IntegerChoices):
+        X86 = 0, 'x86 (32-bit)'
+        AMD64 = 1, 'AMD64 (64-bit)'
+        ARM = 2, 'ARM'
 
-    architecture = models.CharField(max_length=10, choices=ARCHITECTURE_CHOICES)
+    architecture = models.PositiveSmallIntegerField(choices=Architecture)
     frequency = models.PositiveBigIntegerField()
     core_count = models.PositiveSmallIntegerField()
 
 class Memory(Component):
-    MEMORY_TYPE = (
-        ("sdr", "SDR"),
-        ("ddr1", "DDR1"),
-        ("ddr2", "DDR2"),
-        ("ddr3", "DDR3"),
-        ("ddr4", "DDR4"),
-        ("ddr5", "DDR5")
-    )
+    class MemoryType(models.IntegerChoices):
+        UNKNOWN = 0, "N/A"
+        SDR = 1, "SDR"
+        DDR1 = 2, "DDR1"
+        DDR2 = 3, "DDR2"
+        DDR3 = 4, "DDR3"
+        DDR4 = 5, "DDR4"
+        DDR5 = 6, "DDR5"
+
+    type = models.PositiveSmallIntegerField(choices=MemoryType)
     size = models.PositiveBigIntegerField()
     frequency = models.PositiveBigIntegerField()
 
@@ -72,14 +64,13 @@ class Memory(Component):
         ordering = ["constructor", "name"]
 
 class Storage(Component):
-    STORAGE_TYPE_CHOICES = [
-        ("hdd", "HDD"),
-        ("ssd", "SSD"),
-        ("nvme", "NVMe"),
-        ("eMMC", "eMMC")
-    ]
+    class StorageType(models.IntegerChoices):
+        HDD = 0, "HDD"
+        SSD = 1, "SSD"
+        NVME = 2, "NVMe"
+        EMMC = 3, "eMMC"
 
-    storage_type = models.CharField(max_length=10, choices=STORAGE_TYPE_CHOICES)
+    storage_type = models.PositiveSmallIntegerField(choices=StorageType)
     size = models.PositiveBigIntegerField()
 
     class Meta:
@@ -94,12 +85,11 @@ class GraphicsCard(Component):
         ordering = ["constructor", "name"]
 
 class Network(Component):
-    NETWORK_TYPE_CHOICES = [
-        ("ethernet", "Ethernet"),
-        ("wifi", "Wi-Fi")
-    ]
+    class NetworkType(models.IntegerChoices):
+        ETH = 0, "Ethernet"
+        WIFI = 1, "Wi-Fi"
 
-    network_type = models.CharField(max_length=10, choices=NETWORK_TYPE_CHOICES)
+    network_type = models.PositiveSmallIntegerField(choices=NetworkType)
     speed = models.PositiveBigIntegerField()
 
     class Meta:
@@ -108,24 +98,22 @@ class Network(Component):
         ordering = ["constructor", "name"]
 
 class Computer(models.Model):
-    FORMAT_CHOICES = [
-        ("desktop", "Desktop"),
-        ("laptop", "Laptop"),
-        ("rack", "Rack-Mounted"),
-        ("mini", "Mini PC"),
-        ("tablet", "Tablet")
-    ]
+    class Site(models.IntegerChoices):
+        LDLC = 0, 'LDLC'
 
-    SITE_CHOICES =[
-        ("ldlc", "LDLC")
-    ]
+    class Format(models.IntegerChoices):
+        DESKTOP = 0, "Desktop"
+        LAPTOP = 1, "Laptop"
+        RACK = 2, "Rack"
+        MINI = 3, "Mini PC"
+        TABLET = 4, "Tablet"
 
-    site = models.CharField(max_length=15, choices=SITE_CHOICES)
+    site = models.PositiveSmallIntegerField(choices=Site)
     constructor = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=150, blank=True)
     model_number = models.CharField(max_length=150, blank=True)
     serial_number = models.CharField(max_length=150, blank=True)
-    format = models.CharField(max_length=15, choices=FORMAT_CHOICES)
+    format = models.PositiveSmallIntegerField(choices=Format)
 
     processors = models.ManyToManyField(Processor, blank=True)
 
@@ -159,12 +147,12 @@ class Computer(models.Model):
         return {
             "id": self.pk,
             "site": self.site,
-            "constructor": Company.to_dict(self.constructor.pk),
+            "constructor": self.constructor.pk,
             "name": self.name,
             "model_number": self.model_number,
-            "serial_numper": self.serial_number,
+            "serial_number": self.serial_number,
             "format": self.format,
-            "processors": list(map(lambda x: Component.to_comp_dict(x.pk), self.processors.all())),
+            "processors": extract_mtm_pk(self.processors),
             "memory": extract_mtm_pk(self.memory),
             "storage": extract_mtm_pk(self.storage),
             "graphics_card": extract_mtm_pk(self.graphics_card),
