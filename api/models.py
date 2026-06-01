@@ -84,6 +84,11 @@ class GraphicsCard(Component):
         verbose_name_plural = "Graphics Cards"
         ordering = ["constructor", "name"]
 
+class ComputerGraphicsCard(models.Model):
+    computer = models.ForeignKey('Computer', on_delete=models.CASCADE)
+    graphics_card = models.ForeignKey(GraphicsCard, on_delete=models.CASCADE)
+    quantity = models.PositiveSmallIntegerField()
+
 class Network(Component):
     class NetworkType(models.IntegerChoices):
         ETH = 0, "Ethernet"
@@ -121,7 +126,11 @@ class Computer(models.Model):
 
     storage = models.ManyToManyField(Storage, blank=True)
 
-    graphics_card = models.ManyToManyField(GraphicsCard, blank=True)
+    graphics_card = models.ManyToManyField(
+        GraphicsCard,
+        blank=True,
+        through=ComputerGraphicsCard
+    )
 
     network = models.ManyToManyField(Network, blank=True)
 
@@ -147,14 +156,14 @@ class Computer(models.Model):
         return {
             "id": self.pk,
             "site": self.site,
-            "constructor": self.constructor.pk,
+            "constructor": self.constructor.pk if self.constructor is not None else None,
             "name": self.name,
             "model_number": self.model_number,
             "serial_number": self.serial_number,
             "format": self.format,
-            "processors": extract_mtm_pk(self.processors),
-            "memory": extract_mtm_pk(self.memory),
-            "storage": extract_mtm_pk(self.storage),
-            "graphics_card": extract_mtm_pk(self.graphics_card),
-            "network": extract_mtm_pk(self.network),
+            "processors": list(self.processors.values_list('pk', flat=True)),
+            "memory": list(self.memory.values_list('pk', flat=True)),
+            "storage": list(self.storage.values_list('pk', flat=True)),
+            "graphics_card": list(self.graphics_card.values_list('pk', flat=True)),
+            "network": list(self.network.values_list('pk', flat=True)),
         }
