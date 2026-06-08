@@ -44,6 +44,19 @@ class Processor(Component):
     frequency = models.PositiveBigIntegerField()
     core_count = models.PositiveSmallIntegerField()
 
+class ComputerProcessor(models.Model):
+    computer = models.ForeignKey(
+        "Computer",
+        on_delete=models.CASCADE
+    )
+
+    processor = models.ForeignKey(
+        Processor,
+        on_delete=models.CASCADE
+    )
+
+    quantity = models.PositiveSmallIntegerField(default=1)
+
 class Memory(Component):
     class MemoryType(models.IntegerChoices):
         UNKNOWN = 0, "N/A"
@@ -63,6 +76,19 @@ class Memory(Component):
         verbose_name_plural = "Memory Sticks"
         ordering = ["constructor", "name"]
 
+class ComputerMemory(models.Model):
+    computer = models.ForeignKey(
+        "Computer",
+        on_delete=models.CASCADE
+    )
+
+    memory = models.ForeignKey(
+        Memory,
+        on_delete=models.CASCADE
+    )
+
+    quantity = models.PositiveSmallIntegerField(default=1)
+
 class Storage(Component):
     class StorageType(models.IntegerChoices):
         HDD = 0, "HDD"
@@ -78,6 +104,19 @@ class Storage(Component):
         verbose_name_plural = "Storage Devices"
         ordering = ["constructor", "name"]
 
+class ComputerStorage(models.Model):
+    computer = models.ForeignKey(
+        "Computer",
+        on_delete=models.CASCADE
+    )
+
+    storage = models.ForeignKey(
+        Storage,
+        on_delete=models.CASCADE
+    )
+
+    quantity = models.PositiveSmallIntegerField(default=1)
+
 class GraphicsCard(Component):
     class Meta:
         verbose_name = "Graphics Card"
@@ -85,9 +124,17 @@ class GraphicsCard(Component):
         ordering = ["constructor", "name"]
 
 class ComputerGraphicsCard(models.Model):
-    computer = models.ForeignKey('Computer', on_delete=models.CASCADE)
-    graphics_card = models.ForeignKey(GraphicsCard, on_delete=models.CASCADE)
-    quantity = models.PositiveSmallIntegerField()
+    computer = models.ForeignKey(
+        "Computer",
+        on_delete=models.CASCADE
+    )
+
+    graphics_card = models.ForeignKey(
+        GraphicsCard,
+        on_delete=models.CASCADE
+    )
+
+    quantity = models.PositiveSmallIntegerField(default=1)
 
 class Network(Component):
     class NetworkType(models.IntegerChoices):
@@ -102,37 +149,68 @@ class Network(Component):
         verbose_name_plural = "Network Connections"
         ordering = ["constructor", "name"]
 
+class ComputerNetwork(models.Model):
+    computer = models.ForeignKey(
+        "Computer",
+        on_delete=models.CASCADE
+    )
+
+    network = models.ForeignKey(
+        Network,
+        on_delete=models.CASCADE
+    )
+
+    quantity = models.PositiveSmallIntegerField(default=1)
+
 class Computer(models.Model):
-    class Site(models.IntegerChoices):
-        LDLC = 0, 'LDLC'
+    SITE_CHOICES = {
+        "ldlc": "LDLC",
+    }
 
-    class Format(models.IntegerChoices):
-        DESKTOP = 0, "Desktop"
-        LAPTOP = 1, "Laptop"
-        RACK = 2, "Rack"
-        MINI = 3, "Mini PC"
-        TABLET = 4, "Tablet"
+    FORMAT_CHOICES = {
+        "desktop": "Desktop",
+        "laptop": "Laptop",
+        "rack": "Rack",
+        "mini": "Mini PC",
+        "tablet": "Tablet"
+    }
 
-    site = models.PositiveSmallIntegerField(choices=Site)
+    site = models.CharField(max_length=100, choices=SITE_CHOICES)
     constructor = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=150, blank=True)
     model_number = models.CharField(max_length=150, blank=True)
     serial_number = models.CharField(max_length=150, blank=True)
-    format = models.PositiveSmallIntegerField(choices=Format)
+    format = models.CharField(max_length=100, choices=FORMAT_CHOICES)
 
-    processors = models.ManyToManyField(Processor, blank=True)
+    processors = models.ManyToManyField(
+        Processor,
+        through=ComputerProcessor,
+        blank=True
+    )
 
-    memory = models.ManyToManyField(Memory, blank=True)
+    memory = models.ManyToManyField(
+        Memory,
+        through=ComputerMemory,
+        blank=True
+    )
 
-    storage = models.ManyToManyField(Storage, blank=True)
+    storage = models.ManyToManyField(
+        Storage,
+        through=ComputerStorage,
+        blank=True
+    )
 
     graphics_card = models.ManyToManyField(
         GraphicsCard,
-        blank=True,
-        through=ComputerGraphicsCard
+        through=ComputerGraphicsCard,
+        blank=True
     )
 
-    network = models.ManyToManyField(Network, blank=True)
+    network = models.ManyToManyField(
+        Network,
+        through=ComputerNetwork,
+        blank=True
+    )
 
     class Meta:
         ordering = ["constructor", "model_number", "serial_number", "name"]
@@ -161,9 +239,39 @@ class Computer(models.Model):
             "model_number": self.model_number,
             "serial_number": self.serial_number,
             "format": self.format,
-            "processors": list(self.processors.values_list('pk', flat=True)),
-            "memory": list(self.memory.values_list('pk', flat=True)),
-            "storage": list(self.storage.values_list('pk', flat=True)),
-            "graphics_card": list(self.graphics_card.values_list('pk', flat=True)),
-            "network": list(self.network.values_list('pk', flat=True)),
+            "processors": [
+                {
+                    "id": processor.processor_id,
+                    "quantity": processor.quantity,
+                }
+                for processor in ComputerProcessor.objects.filter(computer=self)
+            ],
+            "memory": [
+                {
+                    "id": memory.memory_id,
+                    "quantity": memory.quantity,
+                }
+                for memory in ComputerMemory.objects.filter(computer=self)
+            ],
+            "storage": [
+                {
+                    "id": storage.storage_id,
+                    "quantity": storage.quantity,
+                }
+                for storage in ComputerStorage.objects.filter(computer=self)
+            ],
+            "graphics_card": [
+                {
+                    "id": graphics_card.graphics_card_id,
+                    "quantity": graphics_card.quantity
+                }
+                for graphics_card in ComputerGraphicsCard.objects.filter(computer=self)
+            ],
+            "network": [
+                {
+                    "id": network.graphics_card_id,
+                    "quantity": network.quantity
+                }
+                for network in ComputerNetwork.objects.filter(computer=self)
+            ],
         }
