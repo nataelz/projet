@@ -1,8 +1,5 @@
 from django.db import models
 
-def extract_mtm_pk(field: models.ManyToManyField):
-    return list(map(lambda x: x.pk, field.all()))
-
 class Company(models.Model):
     name = models.CharField(max_length=100)
     website = models.URLField(blank=True)
