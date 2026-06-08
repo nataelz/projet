@@ -41,6 +41,16 @@ class Processor(Component):
     frequency = models.PositiveBigIntegerField()
     core_count = models.PositiveSmallIntegerField()
 
+    def to_dict(self):
+        return {
+            "id": self.pk,
+            "constructor": self.constructor.pk if self.constructor is not None else None,
+            "name": self.name,
+            "architecture": self.architecture,
+            "frequency": self.frequency,
+            "core_count": self.core_count,
+        }
+
 class ComputerProcessor(models.Model):
     computer = models.ForeignKey(
         "Computer",
@@ -55,16 +65,16 @@ class ComputerProcessor(models.Model):
     quantity = models.PositiveSmallIntegerField(default=1)
 
 class Memory(Component):
-    class MemoryType(models.IntegerChoices):
-        UNKNOWN = 0, "N/A"
-        SDR = 1, "SDR"
-        DDR1 = 2, "DDR1"
-        DDR2 = 3, "DDR2"
-        DDR3 = 4, "DDR3"
-        DDR4 = 5, "DDR4"
-        DDR5 = 6, "DDR5"
+    TYPE_CHOICES = {
+        "sdr": "SDR",
+        "ddr1": "DDR1",
+        "ddr2": "DDR2",
+        "ddr3": "DDR3",
+        "ddr4": "DDR4",
+        "ddr5": "DDR5",
+    }
 
-    type = models.PositiveSmallIntegerField(choices=MemoryType)
+    type = models.CharField(max_length=100, choices=TYPE_CHOICES)
     size = models.PositiveBigIntegerField()
     frequency = models.PositiveBigIntegerField()
 
@@ -72,6 +82,16 @@ class Memory(Component):
         verbose_name = "Memory Stick"
         verbose_name_plural = "Memory Sticks"
         ordering = ["constructor", "name"]
+
+    def to_dict(self):
+        return {
+            "id": self.pk,
+            "constructor": self.constructor.pk if self.constructor is not None else None,
+            "name": self.name,
+            "type": self.type,
+            "size": self.size,
+            "frequency": self.frequency,
+        }
 
 class ComputerMemory(models.Model):
     computer = models.ForeignKey(
@@ -87,19 +107,29 @@ class ComputerMemory(models.Model):
     quantity = models.PositiveSmallIntegerField(default=1)
 
 class Storage(Component):
-    class StorageType(models.IntegerChoices):
-        HDD = 0, "HDD"
-        SSD = 1, "SSD"
-        NVME = 2, "NVMe"
-        EMMC = 3, "eMMC"
+    TYPE_CHOICES = {
+        "hdd": "HDD",
+        "ssd": "SSD",
+        "nvme": "NVMe",
+        "emmc": "eMMC",
+    }
 
-    storage_type = models.PositiveSmallIntegerField(choices=StorageType)
+    storage_type = models.CharField(max_length=100, choices=TYPE_CHOICES)
     size = models.PositiveBigIntegerField()
 
     class Meta:
         verbose_name = "Storage Device"
         verbose_name_plural = "Storage Devices"
         ordering = ["constructor", "name"]
+
+    def to_dict(self):
+        return {
+            "id": self.pk,
+            "constructor": self.constructor.pk if self.constructor is not None else None,
+            "name": self.name,
+            "type": self.storage_type,
+            "size": self.size,
+        }
 
 class ComputerStorage(models.Model):
     computer = models.ForeignKey(
@@ -115,10 +145,20 @@ class ComputerStorage(models.Model):
     quantity = models.PositiveSmallIntegerField(default=1)
 
 class GraphicsCard(Component):
+    vram_size = models.PositiveBigIntegerField()
+
     class Meta:
         verbose_name = "Graphics Card"
         verbose_name_plural = "Graphics Cards"
         ordering = ["constructor", "name"]
+
+    def to_dict(self):
+        return {
+            "id": self.pk,
+            "constructor": self.constructor.pk if self.constructor is not None else None,
+            "name": self.name,
+            "vram_size": self.vram_size,
+        }
 
 class ComputerGraphicsCard(models.Model):
     computer = models.ForeignKey(
@@ -226,8 +266,6 @@ class Computer(models.Model):
         return out
 
     def to_dict(self):
-        print(self.processors)
-
         return {
             "id": self.pk,
             "site": self.site,
