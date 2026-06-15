@@ -174,17 +174,27 @@ class ComputerGraphicsCard(models.Model):
     quantity = models.PositiveSmallIntegerField(default=1)
 
 class Network(Component):
-    class NetworkType(models.IntegerChoices):
-        ETH = 0, "Ethernet"
-        WIFI = 1, "Wi-Fi"
+    TYPE_CHOICES = {
+        "eth": "Ethernet",
+        "wifi": "Wi-Fi",
+    }
 
-    network_type = models.PositiveSmallIntegerField(choices=NetworkType)
+    network_type = models.CharField(min_length=100, choices=TYPE_CHOICES)
     speed = models.PositiveBigIntegerField()
 
     class Meta:
         verbose_name = "Network Connection"
         verbose_name_plural = "Network Connections"
         ordering = ["constructor", "name"]
+
+    def to_dict(self):
+        return {
+            "id": self.pk,
+            "constructor": self.constructor.pk if self.constructor is not None else None,
+            "name": self.name,
+            "type": self.network_type,
+            "speed": self.speed,
+        }
 
 class ComputerNetwork(models.Model):
     computer = models.ForeignKey(
