@@ -73,5 +73,34 @@ def computer(request, computer_id):
     return HttpResponse(json.dumps(context), content_type="application/json")
 
 def search(request):
-    context = { "computers": [{"name": "test"}, {"name": "test2"}] }
-    return HttpResponse(json.dumps(context), content_type="application/json")
+    computers = Computer.objects.all()
+
+    constructor = request.GET.get("constructor")
+    format_ = request.GET.get("format")
+    site = request.GET.get("site")
+    name = request.GET.get("name")
+
+    if constructor:
+        computers = computers.filter(constructor_id=constructor)
+    
+    if format_:
+        computers = computers.filter(format=format_)
+    
+    if site:
+        computers = computers.filter(site=site)
+    
+    if name:
+        computers = computers.filter(name__icontains=name)
+
+    computers = computers.distinct()
+
+    limit = request.GET.get("limit")
+    if not limit or limit > 250:
+        limit = 50
+    
+    computers = computers[:int(limit)]
+
+    return JsonResponse(
+        [computer.to_dict() for computer in computers],
+        safe=False
+    )

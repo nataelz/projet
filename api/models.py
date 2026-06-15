@@ -179,7 +179,7 @@ class Network(Component):
         "wifi": "Wi-Fi",
     }
 
-    network_type = models.CharField(min_length=100, choices=TYPE_CHOICES)
+    network_type = models.CharField(max_length=100, choices=TYPE_CHOICES)
     speed = models.PositiveBigIntegerField()
 
     class Meta:
