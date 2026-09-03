@@ -72,25 +72,57 @@ def computer(request, computer_id):
     context = computer.to_dict()
     return HttpResponse(json.dumps(context), content_type="application/json")
 
+def split_and_get(request, field_name):
+    field = request.GET.get(field_name)
+    return list(filter(None, field.split(','))) if field else None
+
 def search(request):
     computers = Computer.objects.all()
 
-    constructor = request.GET.get("constructor")
-    format_ = request.GET.get("format")
-    site = request.GET.get("site")
+    constructor = split_and_get(request, "constructor")
+    format_ = split_and_get(request, "format")
+    site = split_and_get(request, "site")
     name = request.GET.get("name")
+    serial = request.GET.get("serial_number")
+    model = split_and_get(request, "model_number")
+    processor = split_and_get(request, "processors")
+    memory = split_and_get(request, "memory")
+    storage = split_and_get(request, "storage")
+    graphics_card = split_and_get(request, "graphics_card")
+    network = split_and_get(request, "network")
 
     if constructor:
-        computers = computers.filter(constructor_id=constructor)
+        computers = computers.filter(constructor_id__in=constructor)
     
     if format_:
-        computers = computers.filter(format=format_)
+        computers = computers.filter(format__in=format_)
     
     if site:
         computers = computers.filter(site=site)
     
     if name:
         computers = computers.filter(name__icontains=name)
+
+    if serial:
+        computers = computers.filter(serial_number=serial)
+
+    if model:
+        computers = computers.filter(model=model)
+
+    if processor:
+        computers = computers.filter(processors__id__in=processor)
+
+    if memory:
+        computers = computers.filter(memory__id__in=processor)
+
+    if storage:
+        computers = computers.filter(storage__id__in=processor)
+
+    if graphics_card:
+        computers = computers.filter(graphics_card__id__in=processor)
+
+    if network:
+        computers = computers.filter(network__id__in=processor)
 
     computers = computers.distinct()
 
