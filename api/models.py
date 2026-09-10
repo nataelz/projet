@@ -114,7 +114,7 @@ class Storage(Component):
         "emmc": "eMMC",
     }
 
-    storage_type = models.CharField(max_length=100, choices=TYPE_CHOICES)
+    type = models.CharField(max_length=100, choices=TYPE_CHOICES)
     size = models.PositiveBigIntegerField()
 
     class Meta:
@@ -127,7 +127,7 @@ class Storage(Component):
             "id": self.pk,
             "constructor": self.constructor.pk if self.constructor is not None else None,
             "name": self.name,
-            "type": self.storage_type,
+            "type": self.type,
             "size": self.size,
         }
 
@@ -179,7 +179,7 @@ class Network(Component):
         "wifi": "Wi-Fi",
     }
 
-    network_type = models.CharField(max_length=100, choices=TYPE_CHOICES)
+    type = models.CharField(max_length=100, choices=TYPE_CHOICES)
     speed = models.PositiveBigIntegerField()
 
     class Meta:
@@ -192,7 +192,7 @@ class Network(Component):
             "id": self.pk,
             "constructor": self.constructor.pk if self.constructor is not None else None,
             "name": self.name,
-            "type": self.network_type,
+            "type": self.type,
             "speed": self.speed,
         }
 
