@@ -10,6 +10,7 @@ urlpatterns = [
     path("storage/<int:storage_id>", views.storage, name="storage"),
     path("graphicscard/<int:graphicscard_id>", views.graphicscard, name="graphicscard"),
     path("network/<int:network_id>", views.network, name="network"),
+    path("powersupply/<int:powersupply_id>", views.powersupply, name="powersupply"),
     path("computer/<int:computer_id>", views.computer, name="computer"),
     path("search", views.search, name="search"),
 ]

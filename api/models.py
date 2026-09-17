@@ -209,6 +209,54 @@ class ComputerNetwork(models.Model):
 
     quantity = models.PositiveSmallIntegerField(default=1)
 
+class PowerSupply(Component):
+    FORM_FACTORS = {
+        "atx": "ATX",
+        "sfx": "SFX",
+        "tfx": "TFX",
+        "eps": "EPS",
+    }
+
+    RATINGS = {
+        "80plus": "80 PLUS",
+        "80plusbronze": "80 PLUS Bronze",
+        "80plussilver": "80 PLUS Silver",
+        "80plusgold": "80 PLUS Gold",
+        "80plusplatinum": "80 PLUS Platinum",
+        "80plustitanium": "80 PLUS Titanium",
+    }
+
+    form_factor = models.CharField(max_length=25, choices=FORM_FACTORS)
+    wattage = models.PositiveIntegerField()
+    rating = models.CharField(max_length=25, choices=RATINGS)
+
+    class Meta:
+        verbose_name = "Power Supply Unit"
+        ordering = ["constructor", "name"]
+
+    def to_dict(self):
+        return {
+            "id": self.pk,
+            "constructor": self.constructor.pk if self.constructor is not None else None,
+            "name": self.name,
+            "form_factor": self.type,
+            "wattage": self.speed,
+            "rating": self.rating,
+        }
+
+class ComputerPowerSupply(models.Model):
+    computer = models.ForeignKey(
+        "Computer",
+        on_delete=models.CASCADE
+    )
+
+    power_supply = models.ForeignKey(
+        PowerSupply,
+        on_delete=models.CASCADE
+    )
+
+    quantity = models.PositiveSmallIntegerField(default=1)
+
 class Computer(models.Model):
     SITE_CHOICES = {
         "ldlc": "LDLC",
@@ -259,6 +307,12 @@ class Computer(models.Model):
         Network,
         through=ComputerNetwork,
         blank=True
+    )
+
+    power_supply = models.ManyToManyField(
+        PowerSupply,
+        through=ComputerPowerSupply,
+        blank=True,
     )
 
     class Meta:
@@ -318,9 +372,16 @@ class Computer(models.Model):
             ],
             "network": [
                 {
-                    "id": network.graphics_card_id,
+                    "id": network.network_id,
                     "quantity": network.quantity
                 }
                 for network in ComputerNetwork.objects.filter(computer=self)
+            ],
+            "power_supply": [
+                {
+                    "id": power_supply.power_supply_id,
+                    "quantity": power_supply.quantity
+                }
+                for power_supply in ComputerPowerSupply.objects.filter(computer=self)
             ],
         }

@@ -3,7 +3,7 @@ import json
 from django.http import HttpResponse,HttpRequest, Http404, JsonResponse
 from django.shortcuts import render
 
-from .models import Company, Processor, Memory, Storage, GraphicsCard, Network, Computer
+from .models import Company, Processor, Memory, Storage, GraphicsCard, Network, PowerSupply, Computer
 
 # Create your views here.
 def index(request):
@@ -63,6 +63,15 @@ def network(request, network_id):
     context = network.to_dict()
     return HttpResponse(json.dumps(context), content_type="application/json")
 
+def powersupply(request, powersupply_id):
+    try:
+        powersupply = Network.objects.get(pk=powersupply_id)
+    except PowerSupply.DoesNotExist:
+        raise Http404()
+
+    context = powersupply.to_dict()
+    return HttpResponse(json.dumps(context), content_type="application/json")
+
 def computer(request, computer_id):
     try:
         computer = Computer.objects.get(pk=computer_id)
@@ -91,6 +100,7 @@ def search(request):
     storage = split_and_get(request, "storage")
     graphics_card = split_and_get(request, "graphics_card")
     network = split_and_get(request, "network")
+    power_supply = split_and_get(request, "power_supply")
 
     if constructor:
         computers = computers.filter(constructor_id__in=constructor)
@@ -125,6 +135,9 @@ def search(request):
     if network:
         computers = computers.filter(network__id__in=processor)
 
+    if power_supply:
+        computers = computers.filter(power_supply__id__in=power_supply)
+
     # value search
     price_min =                   requests.GET.get("price_min")
     price_max =                   requests.GET.get("price_max")
@@ -151,6 +164,11 @@ def search(request):
     network_type =                split_and_get("network_type")
     network_speed_min =           requests.GET.get("network_speed_min")
     network_speed_max =           requests.GET.get("network_speed_max")
+    power_supply_constructor =    split_and_get("power_supply_constructor")
+    power_supply_form_factor =    split_and_get("power_supply_form_factor")
+    power_supply_wattage_min =    requests.GET.get("power_supply_wattage_min")
+    power_supply_wattage_max =    requests.GET.get("power_supply_wattage_max")
+    power_supply_rating =         split_and_get("power_supply_rating")
 
     if prince_min:
         computers = computers.filter(price__gte=price_min)
@@ -227,6 +245,21 @@ def search(request):
     if network_speed_max:
         computers = computers.filter(network__speed__lte=network_speed_max)
 
+    if power_supply_constructor:
+        computers = computers.filter(power_supply__constructor__in=power_supply_constructor)
+    
+    if power_supply_form_factor:
+        computers = computers.filter(power_supply__form_factor__in=power_supply_form_factor)
+    
+    if power_supply_wattage_min:
+        computers = computers.filter(power_supply__wattage__gte=power_supply_wattage_min)
+
+    if power_supply_wattage_max:
+        computers = computers.filter(power_supply__wattage__lte=power_supply_wattage_max)
+
+    if power_supply_rating:
+        computers = computers.filter(power_supply__rating__in=power_supply_rating)
+    
     computers = computers.distinct()
 
     limit = request.GET.get("limit")
