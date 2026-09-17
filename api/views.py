@@ -126,6 +126,8 @@ def search(request):
         computers = computers.filter(network__id__in=processor)
 
     # value search
+    price_min =                   requests.GET.get("price_min")
+    price_max =                   requests.GET.get("price_max")
     processors_constructor =      split_and_get("processors_constructor")
     processors_arch =             split_and_get("processors_arch")
     processors_freq_min =         requests.GET.get("processors_freq_min")
@@ -149,6 +151,12 @@ def search(request):
     network_type =                split_and_get("network_type")
     network_speed_min =           requests.GET.get("network_speed_min")
     network_speed_max =           requests.GET.get("network_speed_max")
+
+    if prince_min:
+        computers = computers.filter(price__gte=price_min)
+
+    if prince_max:
+        computers = computers.filter(price__lte=price_max)
 
     if processors_constructor:
         computers = computers.filter(processors__constructor__in=processors_constructor)

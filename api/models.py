@@ -228,6 +228,7 @@ class Computer(models.Model):
     model_number = models.CharField(max_length=150, blank=True)
     serial_number = models.CharField(max_length=150, blank=True)
     format = models.CharField(max_length=100, choices=FORMAT_CHOICES)
+    price = models.PositiveBigIntegerField(null=True)
 
     processors = models.ManyToManyField(
         Processor,
