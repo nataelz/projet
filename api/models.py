@@ -229,6 +229,7 @@ class Computer(models.Model):
     serial_number = models.CharField(max_length=150, blank=True)
     format = models.CharField(max_length=100, choices=FORMAT_CHOICES)
     price = models.PositiveBigIntegerField(null=True)
+    link = models.URLField(max_length=128)
 
     processors = models.ManyToManyField(
         Processor,
@@ -285,6 +286,8 @@ class Computer(models.Model):
             "model_number": self.model_number,
             "serial_number": self.serial_number,
             "format": self.format,
+            "price": self.price,
+            "link": self.link,
             "processors": [
                 {
                     "id": processor.processor_id,
