@@ -65,6 +65,11 @@ class ComputerProcessor(models.Model):
     quantity = models.PositiveSmallIntegerField(default=1)
 
 class Memory(Component):
+    FORMAT_CHOICES = {
+        "dimm": "DIMM",
+        "sodimm": "SODIMM",
+    }
+
     TYPE_CHOICES = {
         "sdr": "SDR",
         "ddr1": "DDR1",
@@ -74,6 +79,7 @@ class Memory(Component):
         "ddr5": "DDR5",
     }
 
+    format = models.CharField(max_length=100, choices=FORMAT_CHOICES)
     type = models.CharField(max_length=100, choices=TYPE_CHOICES)
     size = models.PositiveBigIntegerField()
     frequency = models.PositiveBigIntegerField()
@@ -88,6 +94,7 @@ class Memory(Component):
             "id": self.pk,
             "constructor": self.constructor.pk if self.constructor is not None else None,
             "name": self.name,
+            "format": self.format,
             "type": self.type,
             "size": self.size,
             "frequency": self.frequency,
